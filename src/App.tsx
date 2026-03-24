@@ -6,6 +6,8 @@ import CategoriesPage from '@/pages/CategoriesPage';
 import RatingsPage from '@/pages/RatingsPage';
 import ProfilePage from '@/pages/ProfilePage';
 import WriteReviewPage from '@/pages/WriteReviewPage';
+import OnboardingPage from '@/pages/OnboardingPage';
+import { getUser } from '@/data/userStore';
 
 type Tab = 'feed' | 'search' | 'categories' | 'ratings' | 'profile';
 
@@ -18,16 +20,27 @@ const NAV_TABS = [
 ];
 
 export default function App() {
+  const [user, setUser] = useState(getUser());
   const [activeTab, setActiveTab] = useState<Tab>('feed');
   const [isWriting, setIsWriting] = useState(false);
+
+  const handleOnboardingDone = () => {
+    setUser(getUser());
+  };
+
+  if (!user || !user.isOnboarded) {
+    return <OnboardingPage onDone={handleOnboardingDone} />;
+  }
 
   if (isWriting) {
     return <WriteReviewPage onBack={() => setIsWriting(false)} />;
   }
 
+  const interests = user.interests || [];
+
   const renderPage = () => {
     switch (activeTab) {
-      case 'feed': return <FeedPage />;
+      case 'feed': return <FeedPage interests={interests} />;
       case 'search': return <SearchPage />;
       case 'categories': return <CategoriesPage />;
       case 'ratings': return <RatingsPage />;
@@ -36,19 +49,19 @@ export default function App() {
   };
 
   return (
-    <div className="max-w-md mx-auto relative min-h-screen">
+    <div className="max-w-screen-lg mx-auto relative min-h-screen">
       <div className="pb-20">
         {renderPage()}
       </div>
 
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-30">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-screen-lg z-30">
         <div className="bg-white/95 backdrop-blur-xl border-t border-border/50 px-2 py-2 shadow-xl">
-          <div className="flex items-center justify-around relative">
+          <div className="flex items-center justify-around relative max-w-md mx-auto md:max-w-full">
             {NAV_TABS.slice(0, 2).map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all ${
+                className={`flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all ${
                   activeTab === tab.id ? 'text-purple-600' : 'text-muted-foreground hover:text-gray-600'
                 }`}
               >
@@ -81,7 +94,7 @@ export default function App() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all ${
+                className={`flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all ${
                   activeTab === tab.id ? 'text-purple-600' : 'text-muted-foreground hover:text-gray-600'
                 }`}
               >
